@@ -1,0 +1,10 @@
+﻿{
+  "gamerule.keepDurabilityPercent": "Durability of items kept after death",
+  "gamerule.keepDurabilityPercent.description": "The percentage of durability to keep on items when they are kept after death (assuming keepInventory is set to true). The value must be between 0 and 100.",
+  "gamerule.keepExperiencePercent": "Experience kept after death",
+  "gamerule.keepExperiencePercent.description": "The percent of experience levels to keep when the player dies (assuming keepInventory is set to true). The value must be between 0 and 100.",
+  "gamerule.keepHealthPercent": "Health kept after death",
+  "gamerule.keepHealthPercent.description": "The percent of health the player has on respawn (assuming keepInventory is set to true). The value must be between 0 and 100.",
+  "gamerule.keepHungerPercent": "Hunger kept after death",
+  "gamerule.keepHungerPercent.description": "The percent of hunger the player has on respawn (assuming keepInventory is set to true). The value must be between 0 and 100."
+}
