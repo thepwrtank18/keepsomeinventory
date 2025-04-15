@@ -1,5 +1,7 @@
 package me.thepwrtank18.keepsomeinventory;
 
+import com.tiviacz.travelersbackpack.capability.CapabilityUtils;
+import com.tiviacz.travelersbackpack.inventory.BackpackWrapper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
@@ -7,8 +9,10 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.items.IItemHandler;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(keepsomeinventory.MODID)
@@ -28,7 +32,6 @@ public class keepsomeinventory {
 
     // Define mod id in a common place for everything to reference
     public static final String MODID = "keepsomeinventory";
-    // Directly reference a slf4j logger
 
     public keepsomeinventory() {
         // Register ourselves for server and other game events we are interested in
@@ -45,35 +48,27 @@ public class keepsomeinventory {
         durabilityPercent = Math.max(0, Math.min(100, durabilityPercent)); // Clamp to 0–100
 
         for (ItemStack stack : player.getInventory().items) {
-            if (stack.isDamageableItem() && stack.getDamageValue() < stack.getMaxDamage()) {
-                int remaining = stack.getMaxDamage() - stack.getDamageValue();
-                int newRemaining = (int) Math.ceil(remaining * (durabilityPercent / 100.0));
-                int newDamage = stack.getMaxDamage() - newRemaining;
-                stack.setDamageValue(newDamage);
-            }
+            ApplyDamage(durabilityPercent, stack);
         }
 
         // get the armor too
         for (int i = 0; i < player.getInventory().armor.size(); i++) {
             ItemStack stack = player.getInventory().armor.get(i);
-            if (stack.isDamageableItem() && stack.getDamageValue() < stack.getMaxDamage()) {
-                int remaining = stack.getMaxDamage() - stack.getDamageValue();
-                int newRemaining = (int) Math.ceil(remaining * (durabilityPercent / 100.0));
-                int newDamage = stack.getMaxDamage() - newRemaining;
-                stack.setDamageValue(newDamage);
-            }
+            ApplyDamage(durabilityPercent, stack);
         }
 
         // get the offhand too
         ItemStack offhand = player.getInventory().offhand.get(0);
+        ApplyDamage(durabilityPercent, offhand);
+    }
+
+    private void ApplyDamage(int durabilityPercent, ItemStack offhand) {
         if (offhand.isDamageableItem() && offhand.getDamageValue() < offhand.getMaxDamage()) {
             int remaining = offhand.getMaxDamage() - offhand.getDamageValue();
             int newRemaining = (int) Math.ceil(remaining * (durabilityPercent / 100.0));
             int newDamage = offhand.getMaxDamage() - newRemaining;
             offhand.setDamageValue(newDamage);
         }
-
-        // TODO: Traveler's Backpack compatibility
     }
 
     @SubscribeEvent
@@ -100,5 +95,28 @@ public class keepsomeinventory {
         healthPercent = Math.max(0, Math.min(100, healthPercent));
         float newHealth = player.getMaxHealth() * (healthPercent / 100.0f);
         player.setHealth(newHealth);
+
+        int durabilityPercent = level.getGameRules().getInt(KEEP_DURABILITY_PERCENT);
+
+        if (ModList.get().isLoaded("travelersbackpack")) {
+            BackpackWrapper wrapper = CapabilityUtils.getBackpackWrapper(player);
+            if (wrapper != null) {
+                processBackpackSlots(wrapper.getStorage(), durabilityPercent);
+
+                processBackpackSlots(wrapper.getTools(), durabilityPercent);
+            }
+        }
+    }
+
+    private void processBackpackSlots(IItemHandler slots, int durabilityPercent) {
+        for (int i = 0; i < slots.getSlots(); i++) {
+            ItemStack stack = slots.getStackInSlot(i);
+            if (stack.isDamageableItem()) {
+                int remaining = stack.getMaxDamage() - stack.getDamageValue();
+                int newRemaining = (int) Math.ceil(remaining * (durabilityPercent / 100.0));
+                int newDamage = stack.getMaxDamage() - newRemaining;
+                stack.setDamageValue(newDamage);
+            }
+        }
     }
 }
