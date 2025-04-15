@@ -1,0 +1,13 @@
+name: Mod Compatibility
+description: Snitch on other mods that cheese this mod
+title: "[Compat]: "
+labels: ["compatibility"]
+body:
+ - type: input
+   id: url
+   attributes:
+     label: Mod URL
+     description: What's the link to the mod?
+     placeholder: https://modrinth.com/mod/fabric-api
+   validations:
+     required: true
