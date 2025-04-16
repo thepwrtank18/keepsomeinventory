@@ -40,10 +40,17 @@ jobs:
         # Set the request content with application/json
         $request.Content = [System.Net.Http.StringContent]::new($JsonBody, [System.Text.Encoding]::UTF8, "application/json")
         
-        # Send the request and wait for response
+        # Send the request and get response
         $response = $client.SendAsync($request).Result
-        $content = $response.Content.ReadAsStringAsync().Result
-
-        # Output status and response
-        Write-Host "Status Code: $($response.StatusCode)"
-        Write-Output $content
+        
+        # Check for success
+        if ($response.IsSuccessStatusCode -and $response.StatusCode -eq 200) {
+            $content = $response.Content.ReadAsStringAsync().Result
+            Write-Host "Success: Status Code $($response.StatusCode)"
+            Write-Output $content
+        }
+        else {
+            $statusCode = [int]$response.StatusCode
+            $errorMsg = $response.Content.ReadAsStringAsync().Result
+            throw "Request failed with status code $statusCode. Response: $errorMsg"
+        }
