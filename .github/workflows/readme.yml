@@ -10,9 +10,9 @@ jobs:
       shell: pwsh
       run: |
         $Readme = Get-Content -Path .\README.md
-        $Modrinth-URL = "https://api.modrinth.com/v2/project/keepsomeinventory"
-        $User-Agent = "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)"
+        $ModrinthURL = "https://api.modrinth.com/v2/project/keepsomeinventory"
+        $UserAgent = "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)"
         $Headers = @{
-          User-Agent = $User-Agent
+          User-Agent = $UserAgent
         }
-        Invoke-WebRequest -Uri $Modrinth-URL -Method Patch -Authentication {{ secrets.MODRINTH_API_KEY }} -Body $Readme
+        Invoke-WebRequest -Uri $ModrinthURL -Method Patch -Authentication {{ secrets.MODRINTH_API_KEY }} -Body $Readme
