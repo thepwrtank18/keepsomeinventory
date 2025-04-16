@@ -10,11 +10,35 @@ jobs:
       shell: pwsh
       env:
         MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
+      # I had to get ChatGPT to write this because Invoke-WebRequest rejects anything that isn't RFC complaint and the whole thing had to be rewritten
       run: |
-        $Readme = Get-Content -Path .\README.md
+        # Load README content
+        $Readme = Get-Content -Path .\README.md -Raw
+
+        # Define target URL
         $ModrinthURL = "https://api.modrinth.com/v2/project/keepsomeinventory"
-        $Headers = @{
-          'Authorization' = "Bearer $env:MODRINTH_API_KEY"
-          'User-Agent' = "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)"
-        }
-        Invoke-WebRequest -Uri $ModrinthURL -Method Patch -Headers $Headers -Body $Readme
+
+        # Create handler and client
+        $handler = [System.Net.Http.HttpClientHandler]::new()
+        $client = [System.Net.Http.HttpClient]::new($handler)
+
+        # Create PATCH HttpMethod (not built-in by default)
+        $patchMethod = New-Object System.Net.Http.HttpMethod "PATCH"
+
+        # Create request with URL and PATCH method
+        $request = [System.Net.Http.HttpRequestMessage]::new($patchMethod, $ModrinthURL)
+
+        # Add headers, bypassing validation for User-Agent
+        $request.Headers.TryAddWithoutValidation("Authorization", "Bearer $env:MODRINTH_API_KEY")
+        $request.Headers.TryAddWithoutValidation("User-Agent", "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)")
+
+        # Set body content (assumes README.md is plain text/markdown)
+        $request.Content = [System.Net.Http.StringContent]::new($Readme, [System.Text.Encoding]::UTF8, "text/markdown")
+
+        # Send the request and get response
+        $response = $client.SendAsync($request).Result
+        $content = $response.Content.ReadAsStringAsync().Result
+
+        # Output status and response
+        Write-Host "Status Code: $($response.StatusCode)"
+        Write-Output $content
