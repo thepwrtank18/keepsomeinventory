@@ -47,7 +47,7 @@ jobs:
         $response = $client.SendAsync($request).Result
         
         # Handle Response
-        if ($response.IsSuccessStatusCode -and $response.StatusCode -eq 200) {
+        if ($response.IsSuccessStatusCode -and $response.StatusCode -eq 204) {
             $content = $response.Content.ReadAsStringAsync().Result
             Write-Host "✅ Success: $($response.StatusCode)"
             Write-Output $content
