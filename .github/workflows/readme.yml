@@ -1,0 +1,59 @@
+name: Push readme.md to Modrinth
+on: [workflow_dispatch]
+jobs:
+  Push-Readme:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Source Tree
+      uses: actions/checkout@v4
+
+    - name: why the actual fuck is this not working
+      shell: pwsh
+      env:
+        MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
+      run: |
+        echo "API key: $env:MODRINTH_API_KEY"
+    
+    - name: Push readme.md
+      shell: pwsh
+      env:
+        MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
+      run: |
+        # Define Modrinth URL and API Key
+        $ModrinthURL = "https://api.modrinth.com/v2/project/keepsomeinventory"
+        $apiKey = $env:MODRINTH_API_KEY
+        
+        # Load README content
+        $Readme = Get-Content -Path .\README.md -Raw
+        
+        # Prepare JSON body
+        $JsonBody = @{
+            body = $Readme
+        } | ConvertTo-Json -Depth 10
+        
+        # Create HTTP Client and Request Handler
+        $handler = [System.Net.Http.HttpClientHandler]::new()
+        $client = [System.Net.Http.HttpClient]::new($handler)
+        $patchMethod = [System.Net.Http.HttpMethod]::new("PATCH")
+        $request = [System.Net.Http.HttpRequestMessage]::new($patchMethod, $ModrinthURL)
+        
+        # Add Headers (User-Agent is custom, no validation)
+        $request.Headers.TryAddWithoutValidation("Authorization", "Bearer $apiKey")
+        $request.Headers.TryAddWithoutValidation("User-Agent", "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)")
+        $request.Content = [System.Net.Http.StringContent]::new($JsonBody, [System.Text.Encoding]::UTF8, "application/json")
+        
+        # Send Request
+        $response = $client.SendAsync($request).Result
+        
+        # Handle Response
+        if ($response.IsSuccessStatusCode -and $response.StatusCode -eq 200) {
+            $content = $response.Content.ReadAsStringAsync().Result
+            Write-Host "✅ Success: $($response.StatusCode)"
+            Write-Output $content
+        } else {
+            $statusCode = [int]$response.StatusCode
+            $errorMsg = $response.Content.ReadAsStringAsync().Result
+            throw "`Request failed with status code $statusCode.`nResponse:`n$errorMsg"
+        }
+
+
