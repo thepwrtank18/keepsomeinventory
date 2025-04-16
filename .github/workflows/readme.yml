@@ -12,30 +12,35 @@ jobs:
         MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
       # I had to get ChatGPT to write this because Invoke-WebRequest rejects anything that isn't RFC complaint and the whole thing had to be rewritten
       run: |
-        # Load README content
+        # Load README content as a single string
         $Readme = Get-Content -Path .\README.md -Raw
 
-        # Define target URL
+        # Create the JSON payload
+        $JsonBody = @{
+            body = $Readme
+        } | ConvertTo-Json -Depth 10
+
+        # Define the target URL
         $ModrinthURL = "https://api.modrinth.com/v2/project/keepsomeinventory"
 
-        # Create handler and client
+        # Create HTTP handler and client
         $handler = [System.Net.Http.HttpClientHandler]::new()
         $client = [System.Net.Http.HttpClient]::new($handler)
 
-        # Create PATCH HttpMethod (not built-in by default)
-        $patchMethod = New-Object System.Net.Http.HttpMethod "PATCH"
+        # Define PATCH HttpMethod
+        $patchMethod = [System.Net.Http.HttpMethod]::new("PATCH")
 
-        # Create request with URL and PATCH method
+        # Create HTTP request message
         $request = [System.Net.Http.HttpRequestMessage]::new($patchMethod, $ModrinthURL)
 
-        # Add headers, bypassing validation for User-Agent
+        # Add headers without validation
         $request.Headers.TryAddWithoutValidation("Authorization", "Bearer $env:MODRINTH_API_KEY")
         $request.Headers.TryAddWithoutValidation("User-Agent", "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)")
 
-        # Set body content (assumes README.md is plain text/markdown)
-        $request.Content = [System.Net.Http.StringContent]::new($Readme, [System.Text.Encoding]::UTF8, "text/markdown")
-
-        # Send the request and get response
+        # Set the request content with application/json
+        $request.Content = [System.Net.Http.StringContent]::new($JsonBody, [System.Text.Encoding]::UTF8, "application/json")
+        
+        # Send the request and wait for response
         $response = $client.SendAsync($request).Result
         $content = $response.Content.ReadAsStringAsync().Result
 
