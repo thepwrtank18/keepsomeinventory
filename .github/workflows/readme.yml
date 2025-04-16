@@ -1,8 +1,9 @@
 name: Push readme.md to Modrinth
-on: [workflow_dispatch]
+on: [push]
 jobs:
   Push-Readme:
     runs-on: ubuntu-latest
+    environment: what is tss
     steps:
     - name: Checkout Source Tree
       uses: actions/checkout@v4
