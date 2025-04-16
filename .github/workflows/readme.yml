@@ -12,45 +12,50 @@ jobs:
         MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
       # I had to get ChatGPT to write this because Invoke-WebRequest rejects anything that isn't RFC complaint and the whole thing had to be rewritten
       run: |
-        # Load README content as a single string
-        $Readme = Get-Content -Path .\README.md -Raw
+        # Debug: Check if API key is present
+        if (-not $env:MODRINTH_API_KEY) {
+            throw "Environment variable MODRINTH_API_KEY is not set."
+        }
 
-        # Create the JSON payload
+        # Load README content
+        $Readme = Get-Content -Path .\README.md -Raw
+        
+        # Create JSON body
         $JsonBody = @{
             body = $Readme
         } | ConvertTo-Json -Depth 10
 
-        # Define the target URL
+        # Modrinth API endpoint
         $ModrinthURL = "https://api.modrinth.com/v2/project/keepsomeinventory"
-
-        # Create HTTP handler and client
+        
+        # Create client and request
         $handler = [System.Net.Http.HttpClientHandler]::new()
         $client = [System.Net.Http.HttpClient]::new($handler)
-
-        # Define PATCH HttpMethod
         $patchMethod = [System.Net.Http.HttpMethod]::new("PATCH")
-
-        # Create HTTP request message
         $request = [System.Net.Http.HttpRequestMessage]::new($patchMethod, $ModrinthURL)
-
-        # Add headers without validation
-        $request.Headers.TryAddWithoutValidation("Authorization", "Bearer $env:MODRINTH_API_KEY")
+        
+        # Add headers
+        $authHeader = "Bearer $($env:MODRINTH_API_KEY)"
+        $request.Headers.TryAddWithoutValidation("Authorization", $authHeader)
         $request.Headers.TryAddWithoutValidation("User-Agent", "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)")
-
-        # Set the request content with application/json
+        
+        # Add JSON content
         $request.Content = [System.Net.Http.StringContent]::new($JsonBody, [System.Text.Encoding]::UTF8, "application/json")
         
-        # Send the request and get response
+        # Debug: show request headers
+        Write-Host "`n--- Request Headers ---"
+        $request.Headers | ForEach-Object { "$($_.Key): $($_.Value)" } | Write-Host
+        
+        # Send the request
         $response = $client.SendAsync($request).Result
         
-        # Check for success
+        # Handle response
         if ($response.IsSuccessStatusCode -and $response.StatusCode -eq 200) {
             $content = $response.Content.ReadAsStringAsync().Result
-            Write-Host "Success: Status Code $($response.StatusCode)"
+            Write-Host "`Success: $($response.StatusCode)"
             Write-Output $content
-        }
-        else {
+        } else {
             $statusCode = [int]$response.StatusCode
             $errorMsg = $response.Content.ReadAsStringAsync().Result
-            throw "Request failed with status code $statusCode. Response: $errorMsg"
+            throw "`Request failed with status code $statusCode.`nResponse:`n$errorMsg"
         }
