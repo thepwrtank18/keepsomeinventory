@@ -13,8 +13,8 @@ jobs:
       run: |
         $Readme = Get-Content -Path .\README.md
         $ModrinthURL = "https://api.modrinth.com/v2/project/keepsomeinventory"
-        $UserAgent = "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)"
         $Headers = @{
-          Authorization = "Bearer $env:MODRINTH_API_KEY"
+          'Authorization' = "Bearer $env:MODRINTH_API_KEY"
+          'User-Agent' = "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)"
         }
-        Invoke-WebRequest -Uri $ModrinthURL -Method Patch -UserAgent $UserAgent -Headers $Headers -Body $Readme
+        Invoke-WebRequest -Uri $ModrinthURL -Method Patch -Headers $Headers -Body $Readme
