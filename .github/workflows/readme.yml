@@ -1,5 +1,8 @@
 name: Push readme.md to Modrinth
-on: [push]
+on:
+  push:
+    paths:
+    - 'README.md'
 jobs:
   Push-Readme:
     runs-on: ubuntu-latest
@@ -7,13 +10,6 @@ jobs:
     steps:
     - name: Checkout Source Tree
       uses: actions/checkout@v4
-
-    - name: why the actual fuck is this not working
-      shell: pwsh
-      env:
-        MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
-      run: |
-        echo "API key: $env:MODRINTH_API_KEY"
     
     - name: Push readme.md
       shell: pwsh
