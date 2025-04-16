@@ -8,8 +8,10 @@ jobs:
       uses: actions/checkout@v4
     - name: Push readme.md
       shell: pwsh
+      env:
+        MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
       run: |
         $Readme = Get-Content -Path .\README.md
         $ModrinthURL = "https://api.modrinth.com/v2/project/keepsomeinventory"
         $UserAgent = "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)"
-        Invoke-WebRequest -Uri $ModrinthURL -Method Patch -UserAgent $UserAgent -Authentication {{ secrets.MODRINTH_API_KEY }} -Body $Readme
+        Invoke-WebRequest -Uri $ModrinthURL -Method Patch -UserAgent $UserAgent -Authentication $env:MODRINTH_API_KEY -Body $Readme
