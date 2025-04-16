@@ -12,41 +12,40 @@ jobs:
       env:
         MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
       run: |
+        # Define API Key and URL
+        $ModrinthURL = "https://api.modrinth.com/v2/project/keepsomeinventory"
+        $apiKey = $env:MODRINTH_API_KEY
+        
         # Load README content
         $Readme = Get-Content -Path .\README.md -Raw
-
-        # Create JSON body
+        
+        # Prepare JSON body
         $JsonBody = @{
             body = $Readme
         } | ConvertTo-Json -Depth 10
-
-        # Modrinth API endpoint
-        $ModrinthURL = "https://api.modrinth.com/v2/project/keepsomeinventory"
-
-        # Create client and request
-        $handler = [System.Net.Http.HttpClientHandler]::new()
-        $client = [System.Net.Http.HttpClient]::new($handler)
-        $patchMethod = [System.Net.Http.HttpMethod]::new("PATCH")
-        $request = [System.Net.Http.HttpRequestMessage]::new($patchMethod, $ModrinthURL)
-
-        # Add headers
-        $authHeader = "Bearer $($env:MODRINTH_API_KEY)"
-        $request.Headers.TryAddWithoutValidation("Authorization", $authHeader)
-        $request.Headers.TryAddWithoutValidation("User-Agent", "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)")
-
-        # Add JSON content
-        $request.Content = [System.Net.Http.StringContent]::new($JsonBody, [System.Text.Encoding]::UTF8, "application/json")
-
-        # Send the request
-        $response = $client.SendAsync($request).Result
-
-        # Handle response
-        if ($response.IsSuccessStatusCode -and $response.StatusCode -eq 200) {
-            $content = $response.Content.ReadAsStringAsync().Result
-            Write-Host "`n✅ Success: $($response.StatusCode)"
-            Write-Output $content
-        } else {
-            $statusCode = [int]$response.StatusCode
-            $errorMsg = $response.Content.ReadAsStringAsync().Result
-            throw "`n❌ Request failed with status code $statusCode.`nResponse:`n$errorMsg"
+        
+        # Headers
+        $headers = @{
+            "Authorization" = "Bearer $apiKey"
+            "User-Agent" = "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)"
+            "Content-Type" = "application/json"
         }
+        
+        # Debugging: Output the headers being sent
+        Write-Host "Sending request with headers:"
+        $headers | ForEach-Object { Write-Host "$($_.Key): $($_.Value)" }
+        
+        # Send the PATCH request using Invoke-RestMethod
+        try {
+            $response = Invoke-RestMethod -Uri $ModrinthURL -Method Patch -Headers $headers -Body $JsonBody
+        
+            # Check the response
+            if ($response -eq $null) {
+                Write-Host "❌ Failed to get a valid response from Modrinth."
+            } else {
+                Write-Host "✅ Success: $($response)"
+            }
+        } catch {
+            Write-Host "❌ Error: $($_.Exception.Message)"
+        }
+
