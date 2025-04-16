@@ -9,14 +9,9 @@ jobs:
     - name: Push readme.md
       shell: pwsh
       env:
-        MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
+        apikey: ${{ secrets.MODRINTH_API_KEY }}
       # I had to get ChatGPT to write this because Invoke-WebRequest rejects anything that isn't RFC complaint and the whole thing had to be rewritten
       run: |
-        # Debug: Check if API key is present
-        if (-not $env:MODRINTH_API_KEY) {
-            throw "Environment variable MODRINTH_API_KEY is not set."
-        }
-
         # Load README content
         $Readme = Get-Content -Path .\README.md -Raw
         
@@ -35,7 +30,7 @@ jobs:
         $request = [System.Net.Http.HttpRequestMessage]::new($patchMethod, $ModrinthURL)
         
         # Add headers
-        $authHeader = "Bearer $($env:MODRINTH_API_KEY)"
+        $authHeader = "Bearer $($env:apikey)"
         $request.Headers.TryAddWithoutValidation("Authorization", $authHeader)
         $request.Headers.TryAddWithoutValidation("User-Agent", "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)")
         
