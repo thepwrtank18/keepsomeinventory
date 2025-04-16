@@ -1,0 +1,17 @@
+name: Push readme.md to Modrinth
+on: [push]
+jobs:
+  Push-Readme:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Source Tree
+      uses: actions/checkout@v4
+    - name: Push readme.md
+      run: |
+        $Readme = Get-Content -Path .\README.md
+        $Modrinth-URL = "https://api.modrinth.com/v2/project/keepsomeinventory"
+        $User-Agent = "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)"
+        $Headers = @{
+          body = $Readme
+        }
+        Invoke-WebRequest -Uri $Modrinth-URL -Method Patch -Authentication {{ secrets.MODRINTH_API_KEY }}
