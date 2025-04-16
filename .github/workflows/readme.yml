@@ -1,5 +1,5 @@
 name: Push readme.md to Modrinth
-on: [push]
+on: [workflow_dispatch]
 jobs:
   Push-Readme:
     runs-on: ubuntu-latest
