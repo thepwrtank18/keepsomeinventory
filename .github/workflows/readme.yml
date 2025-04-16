@@ -7,11 +7,12 @@ jobs:
     - name: Checkout Source Tree
       uses: actions/checkout@v4
     - name: Push readme.md
+      shell: pwsh
       run: |
         $Readme = Get-Content -Path .\README.md
         $Modrinth-URL = "https://api.modrinth.com/v2/project/keepsomeinventory"
         $User-Agent = "thepwrtank18/keepsomeinventory/1.0 (pt18.relay@gmail.com)"
         $Headers = @{
-          body = $Readme
+          User-Agent = $User-Agent
         }
-        Invoke-WebRequest -Uri $Modrinth-URL -Method Patch -Authentication {{ secrets.MODRINTH_API_KEY }}
+        Invoke-WebRequest -Uri $Modrinth-URL -Method Patch -Authentication {{ secrets.MODRINTH_API_KEY }} -Body $Readme
