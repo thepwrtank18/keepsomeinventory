@@ -17,4 +17,4 @@ jobs:
         $Headers = @{
           Authorization = "Bearer $env:MODRINTH_API_KEY"
         }
-        Invoke-WebRequest -Uri $ModrinthURL -Method Patch -UserAgent $UserAgent -Headers $Headers Body $Readme
+        Invoke-WebRequest -Uri $ModrinthURL -Method Patch -UserAgent $UserAgent -Headers $Headers -Body $Readme
