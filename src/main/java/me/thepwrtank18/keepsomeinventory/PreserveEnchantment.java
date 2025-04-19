@@ -11,8 +11,4 @@ public class PreserveEnchantment extends Enchantment {
                 EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
         });
     }
-    @Override
-    public boolean checkCompatibility(Enchantment other) {
-        return super.checkCompatibility(other);
-    }
 }
