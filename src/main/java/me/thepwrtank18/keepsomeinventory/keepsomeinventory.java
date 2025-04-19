@@ -4,15 +4,18 @@ import com.tiviacz.travelersbackpack.capability.CapabilityUtils;
 import com.tiviacz.travelersbackpack.inventory.BackpackWrapper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(keepsomeinventory.MODID)
@@ -33,7 +36,9 @@ public class keepsomeinventory {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "keepsomeinventory";
 
-    public keepsomeinventory() {
+    public keepsomeinventory(FMLJavaModLoadingContext context) {
+        IEventBus modEventBus = context.getModEventBus();
+        ModEnchantments.ENCHANTMENTS.register(modEventBus);
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
     }
@@ -64,6 +69,9 @@ public class keepsomeinventory {
 
     private void ApplyDamage(int durabilityPercent, ItemStack offhand) {
         if (offhand.isDamageableItem() && offhand.getDamageValue() < offhand.getMaxDamage()) {
+            if (EnchantmentHelper.getEnchantments(offhand).containsKey(ModEnchantments.PRESERVE.get())) {
+                return;
+            }
             int remaining = offhand.getMaxDamage() - offhand.getDamageValue();
             int newRemaining = (int) Math.ceil(remaining * (durabilityPercent / 100.0));
             int newDamage = offhand.getMaxDamage() - newRemaining;
@@ -112,6 +120,10 @@ public class keepsomeinventory {
         for (int i = 0; i < slots.getSlots(); i++) {
             ItemStack stack = slots.getStackInSlot(i);
             if (stack.isDamageableItem()) {
+                if (EnchantmentHelper.getEnchantments(stack).containsKey(ModEnchantments.PRESERVE.get())) {
+                    return;
+                }
+
                 int remaining = stack.getMaxDamage() - stack.getDamageValue();
                 int newRemaining = (int) Math.ceil(remaining * (durabilityPercent / 100.0));
                 int newDamage = stack.getMaxDamage() - newRemaining;

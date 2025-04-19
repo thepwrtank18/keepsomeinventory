@@ -6,5 +6,6 @@
   "gamerule.keepHealthPercent": "Health kept after death",
   "gamerule.keepHealthPercent.description": "The percent of health the player has on respawn (assuming keepInventory is set to true). The value must be between 0 and 100.",
   "gamerule.keepHungerPercent": "Hunger kept after death",
-  "gamerule.keepHungerPercent.description": "The percent of hunger the player has on respawn (assuming keepInventory is set to true). The value must be between 0 and 100."
+  "gamerule.keepHungerPercent.description": "The percent of hunger the player has on respawn (assuming keepInventory is set to true). The value must be between 0 and 100.",
+  "enchantment.keepsomeinventory.preserve": "Ephemeral Resistance"
 }
