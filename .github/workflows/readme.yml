@@ -1,18 +1,15 @@
 name: Push readme.md to Modrinth
-on: [workflow_dispatch]
+on:
+  push:
+    paths:
+    - 'README.md'
 jobs:
   Push-Readme:
     runs-on: ubuntu-latest
+    environment: what is tss
     steps:
     - name: Checkout Source Tree
       uses: actions/checkout@v4
-
-    - name: why the actual fuck is this not working
-      shell: pwsh
-      env:
-        MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
-      run: |
-        echo "API key: $env:MODRINTH_API_KEY"
     
     - name: Push readme.md
       shell: pwsh
@@ -46,7 +43,7 @@ jobs:
         $response = $client.SendAsync($request).Result
         
         # Handle Response
-        if ($response.IsSuccessStatusCode -and $response.StatusCode -eq 200) {
+        if ($response.IsSuccessStatusCode -and $response.StatusCode -eq 204) {
             $content = $response.Content.ReadAsStringAsync().Result
             Write-Host "✅ Success: $($response.StatusCode)"
             Write-Output $content
