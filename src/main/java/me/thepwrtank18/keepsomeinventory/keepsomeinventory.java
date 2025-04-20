@@ -67,15 +67,24 @@ public class keepsomeinventory {
         ApplyDamage(durabilityPercent, offhand);
     }
 
-    private void ApplyDamage(int durabilityPercent, ItemStack offhand) {
-        if (offhand.isDamageableItem() && offhand.getDamageValue() < offhand.getMaxDamage()) {
-            if (EnchantmentHelper.getEnchantments(offhand).containsKey(ModEnchantments.PRESERVE.get())) {
+    private void ApplyDamage(int durabilityPercent, ItemStack stack) {
+        if (stack.isDamageableItem() && stack.getDamageValue() < stack.getMaxDamage()) {
+            if (EnchantmentHelper.getEnchantments(stack).containsKey(ModEnchantments.PRESERVE.get())) {
                 return;
             }
-            int remaining = offhand.getMaxDamage() - offhand.getDamageValue();
+
+            int remaining = stack.getMaxDamage() - stack.getDamageValue();
             int newRemaining = (int) Math.ceil(remaining * (durabilityPercent / 100.0));
-            int newDamage = offhand.getMaxDamage() - newRemaining;
-            offhand.setDamageValue(newDamage);
+            int newDamage = stack.getMaxDamage() - newRemaining;
+            stack.setDamageValue(newDamage);
+        }
+    }
+
+
+    private void processBackpackSlots(IItemHandler slots, int durabilityPercent) {
+        for (int i = 0; i < slots.getSlots(); i++) {
+            ItemStack stack = slots.getStackInSlot(i);
+            ApplyDamage(durabilityPercent, stack);
         }
     }
 
@@ -112,22 +121,6 @@ public class keepsomeinventory {
                 processBackpackSlots(wrapper.getStorage(), durabilityPercent);
 
                 processBackpackSlots(wrapper.getTools(), durabilityPercent);
-            }
-        }
-    }
-
-    private void processBackpackSlots(IItemHandler slots, int durabilityPercent) {
-        for (int i = 0; i < slots.getSlots(); i++) {
-            ItemStack stack = slots.getStackInSlot(i);
-            if (stack.isDamageableItem()) {
-                if (EnchantmentHelper.getEnchantments(stack).containsKey(ModEnchantments.PRESERVE.get())) {
-                    return;
-                }
-
-                int remaining = stack.getMaxDamage() - stack.getDamageValue();
-                int newRemaining = (int) Math.ceil(remaining * (durabilityPercent / 100.0));
-                int newDamage = stack.getMaxDamage() - newRemaining;
-                stack.setDamageValue(newDamage);
             }
         }
     }
